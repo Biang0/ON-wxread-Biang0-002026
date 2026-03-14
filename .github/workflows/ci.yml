@@ -1,8 +1,10 @@
 name: Weekly Log Cleanup
 
 on:
+  # 定时任务触发条件，每周日北京时间 24 点（即周一 00:00，对应 UTC 时间周日 16:00）执行
   schedule:
     - cron: '0 16 * * sun'
+  # 手动触发条件
   workflow_dispatch:
     description: 手动触发日志清理任务
 
@@ -10,32 +12,32 @@ jobs:
   cleanup_log:
     runs-on: ubuntu-22.04
     permissions:
-      contents: write  # 用于提交和推送
+      contents: write  # 关键权限声明，用于提交文件修改
 
     steps:
       - name: 📥 检出仓库
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          # 必须加这个，才能让 git push 正常工作
-          persist-credentials: false
 
-      - name: 🗑️ 清空日志文件
+      - name: 🗑️ 清理日志文件
         run: |
-          echo "🧹 开始清空 log.md"
+          echo "🧹 开始清理 log.md 文件，让它恢复干净整洁！"
           > log.md
-          echo "✅ log.md 已清空"
+          echo "🎉 log.md 文件已成功清空，仿佛焕然一新！"
 
-      - name: 📤 提交并推送更新
+      - name: 📤 提交 log.md
         run: |
-          git config --global user.name "${{ secrets.USER_NAME }}"
-          git config --global user.email "${{ secrets.USER_EMAIL }}"
+          # 使用加密的 GitHub Secrets 配置用户信息
+          git config --global user.name ${{ secrets.USER_NAME }}
+          git config --global user.email ${{ secrets.USER_EMAIL }}
           
           if git diff --quiet log.md; then
-            echo "✅ 无变化，跳过提交"
+            echo "✅ 检查发现 log.md 没有变更，无需提交啦。"
           else
+            echo "📝 log.md 有更新，准备提交到仓库。"
             git add log.md
             git commit -m "Weekly log cleanup: Empty log.md"
-            git push origin HEAD
-            echo "🎉 清理完成并已提交！"
+            git push
+            echo "🎉 log.md 提交成功，仓库已更新！"
           fi
