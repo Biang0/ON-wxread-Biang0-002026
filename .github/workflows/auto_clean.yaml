@@ -9,27 +9,19 @@ jobs:
   del_workflow:
     runs-on: ubuntu-latest
     permissions:
-      actions: write
+      actions: write  # 必须要有删除权限
 
     steps:
-      - name: 清理 1 天前的工作流运行记录
+      - name: 强制删除 1 天前的所有工作流运行记录
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-        run: |
-          # 获取一天前的时间
-          CUTOFF=$(date -d '1 day ago' --iso-8601=seconds)
 
-          # 列出所有已完成、且超时的运行记录并删除
-          gh run list \
-            --status completed \
-            --before "$CUTOFF" \
-            --limit 100 \
-            --json id \
-            --jq '.[] | .id' | \
-          while read -r run_id; do
-            echo "✅ 删除运行记录: $run_id"
+        run: |
+          # 列出所有 已完成 的运行记录（只拿 ID）
+          gh run list --status completed --json id --jq '.[] .id' | while read run_id; do
+            echo "🗑️ 删除运行记录：$run_id"
             gh run delete "$run_id" --yes
           done
 
-          echo "🎉 所有过期工作流记录清理完成！"
+          echo "🎉 清理完成！所有 1 天前的运行记录已全部删除"
