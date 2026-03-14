@@ -8,11 +8,13 @@ on:
 jobs:
   del_workflow:
     runs-on: ubuntu-latest
+    permissions:
+      actions: write  # 必须加，否则没有删除权限
     steps:
       - name: Delete workflow runs
-        uses: Mattraks/delete-workflow-runs@v2.0.7
+        uses: Mattraks/delete-workflow-runs@v2.0.7  # ✅ 正确版本
         with:
           repository: ${{ github.repository }}
-          retain_days: 1
-          keep_minimum_runs: 0
+          days_old: 1           # ✅ 正确参数（保留1天内的记录）
+          keep_minimum_runs: 0  # 最少保留0条
           token: ${{ secrets.GITHUB_TOKEN }}
